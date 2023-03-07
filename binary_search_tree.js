@@ -109,5 +109,13 @@ class Node {
   tree.postOrder(tree.root);
   
   // Pedindo ao usuário que insira o valor a ser buscado na árvore
-  const searchValue = parseInt(prompt("Insira o valor a ser buscado na árvore:
+  const searchValue = parseInt(prompt("Insira o valor a ser buscado na árvore:"));
+
+  // Buscando o valor na árvore e imprimindo o resultado
+  const result = tree.search(searchValue);
+  if (result === null) {
+  console.log(O valor ${searchValue} não foi encontrado na árvore.);
+  } else {
+  console.log(O valor ${searchValue} foi encontrado na árvore.);
+  }
   
