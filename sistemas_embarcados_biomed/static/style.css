@@ -1,0 +1,144 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000000;
+    text-align: center;
+    margin: 0;
+    padding: 50px;
+    position: relative; /* Adiciona posição relativa ao body */
+}
+
+h1 {
+    color: #7d7d7d;
+}
+
+p {
+    font-size: 18px;
+    color: #7d7d7d;
+    margin-bottom: 20px; /* Adiciona espaço abaixo do parágrafo */
+}
+
+.pulse {
+    /* Estilos do pulse */
+    position: relative; /* Altera a posição para relativa */
+    top: auto; /* Remove o valor anterior de top */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 100px;
+    margin-top: 20px; /* Aumenta o espaço acima do .pulse */
+    margin-bottom: 20px; /* Adiciona espaço abaixo do .pulse */
+}
+
+.pulse:after {
+    content: "";
+    display: block;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200px 100px"><polyline fill="none" stroke-width="3px" stroke="white" points="2.4,58.7 70.8,58.7 76.1,46.2 81.1,58.7 89.9,58.7 93.8,66.5 102.8,22.7 110.6,78.7 115.3,58.7 126.4,58.7 134.4,54.7 142.4,58.7 197.8,58.7 "/></svg>') 0 0 no-repeat;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    -webkit-animation: 3s pulse infinite linear;
+    animation: 3s pulse infinite linear;
+}
+
+/* Estilo para a tabela */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #5a5a5a;
+    margin-top: 80px;
+}
+
+/* Estilo para as células de cabeçalho (th) */
+.custom-table th {
+    background-color: #5a5a5a;
+    color: #ffffff;
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+/* Estilo para as células do corpo (td) */
+.custom-table td {
+    padding: 10px;
+    border: 1px solid #000000;
+    text-align: center;
+}
+
+/* Estilo para as linhas ímpares do corpo (td) */
+.custom-table tr:nth-child(odd) {
+    background-color: #5a5a5a;
+}
+
+/* Estilo para a imagem */
+.grafico-img {
+    max-width: 50%;
+    display: block;
+    margin: 100px auto;
+}
+
+#downloadButton {
+    position: absolute;
+    bottom: 10px; /* Posiciona o botão 10px acima do limite inferior do body */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}   
+
+  @-webkit-keyframes pulse {
+    0% {
+      clip: rect(0, 0, 100px, 0);
+    }
+    10% {
+      clip: rect(0, 66.6666666667px, 100px, 0);
+    }
+    38% {
+      clip: rect(0, 133.3333333333px, 100px, 0);
+    }
+    48% {
+      clip: rect(0, 200px, 100px, 0);
+    }
+    52% {
+      clip: rect(0, 200px, 100px, 0);
+    }
+    62% {
+      clip: rect(0, 200px, 100px, 66.6666666667px);
+    }
+    90% {
+      clip: rect(0, 200px, 100px, 133.3333333333px);
+    }
+    100% {
+      clip: rect(0, 200px, 100px, 200px);
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      clip: rect(0, 0, 100px, 0);
+    }
+    10% {
+      clip: rect(0, 66.6666666667px, 100px, 0);
+    }
+    38% {
+      clip: rect(0, 133.3333333333px, 100px, 0);
+    }
+    48% {
+      clip: rect(0, 200px, 100px, 0);
+    }
+    52% {
+      clip: rect(0, 200px, 100px, 0);
+    }
+    62% {
+      clip: rect(0, 200px, 100px, 66.6666666667px);
+    }
+    90% {
+      clip: rect(0, 200px, 100px, 133.3333333333px);
+    }
+    100% {
+      clip: rect(0, 200px, 100px, 200px);
+    }
+  }

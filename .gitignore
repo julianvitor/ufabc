@@ -75,3 +75,8 @@ dkms.conf
 # End of https://www.toptal.com/developers/gitignore/api/linux,c
 #vscode
 .vscode/
+
+
+#wsl
+*.Identifier
+**/Zone.Identifier

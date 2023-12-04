@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frequência Cardíaca</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Frequência Cardíaca Atual: {{ heart_rate }} bpm</h1>
+    <div class="container">
+        <div class="pulse"></div>
+    </div>
+    <p>A frequência cardíaca é um indicador importante da saúde cardiovascular e pode variar com a idade, nível de atividade física e outras condições.</p>
+    <div class="tg-wrap">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Idade</th>
+                    <th>Zona Alvo de FC 50-85%</th>
+                    <th>Frequência Cardíaca Máxima Média, 100%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>20 anos</td>
+                    <td>100-170 batimentos por minuto (bpm)</td>
+                    <td>200 bpm</td>
+                </tr>
+            
+                <tr>
+                    <td>30 anos</td>
+                    <td>95-162 bpm</td>
+                    <td>190 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>35 anos</td>
+                    <td>93-157 bpm</td>
+                    <td>185 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>40 anos</td>
+                    <td>90-153 bpm</td>
+                    <td>180 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>45 anos</td>
+                    <td>88-149 bpm</td>
+                    <td>175 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>50 anos</td>
+                    <td>85-145 bpm</td>
+                    <td>170 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>55 anos</td>
+                    <td>83-140 bpm</td>
+                    <td>165 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>60 anos</td>
+                    <td>80-136 bpm</td>
+                    <td>160 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>65 anos</td>
+                    <td>78-132 bpm</td>
+                    <td>155 bpm</td>
+                  </tr>
+                  <tr>
+                    <td>70 anos</td>
+                    <td>75-128 bpm</td>
+                    <td>150 bpm</td>
+                  </tr>    
+            </tbody>
+        </table>
+    </div>
+    <img src="{{ url_for('static', filename='grafico_tensao.png') }}" alt="tensao" class="grafico-img">
+
+    
+    
+    
+    <button id="downloadButton">Download</button>
+
+    <!-- Inclua a biblioteca html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+    <!-- Inclua o script JavaScript -->
+    <script src="/static/script.js"></script>
+
+</body>
+</html>
