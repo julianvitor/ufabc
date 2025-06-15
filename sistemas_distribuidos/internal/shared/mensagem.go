@@ -1,4 +1,4 @@
-package mensagem
+package shared
 
 type Mensagem struct {
 	Operacao    string `json:"operacao"`
