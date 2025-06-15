@@ -24,7 +24,6 @@ var (
 const clienteAddr = "127.0.0.1:9901"
 
 // iniciarListener abre uma porta TCP para receber respostas assíncronas dos servidores.
-// Esta função deve ser executada em uma goroutine.
 func iniciarListener() {
 	listener, err := net.Listen("tcp", clienteAddr)
 	if err != nil {
@@ -246,6 +245,7 @@ func cliente() {
 
 			case "WAIT_FOR_RESPONSE":
 				fmt.Printf("WAIT_FOR_RESPONSE para a chave [%s]. Aguardando atualização assíncrona do servidor [%s].\n", msgResposta.Chave, conn.RemoteAddr().String())
+				iniciarListener()
 
 			default:
 				fmt.Println("Resposta inesperada do servidor:", respostaServidor)
