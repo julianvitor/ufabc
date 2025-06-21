@@ -86,12 +86,6 @@ func RandomConect(servidoresIP []string) (net.Conn, error) {
 	return conn, nil // Sucesso
 }
 
-
-// validarIP verifica se a string do IP (sem a porta) é válida.
-func validarIP(ip string) bool {
-	return net.ParseIP(ip) != nil
-}
-
 func cliente() {
 	var servidoresIP []string
 	var iniciado bool
@@ -105,7 +99,7 @@ func cliente() {
 		fmt.Println("4. SAIR")
 		fmt.Print("Escolha uma opção: ")
 
-		opcao, _ := reader.ReadString('\n')
+		opcao, _ := reader.ReadString('\n')//blank identifier como retorno do erro para ignorar na compilação
 		opcao = strings.ToUpper(strings.TrimSpace(opcao))
 
 		switch opcao {
@@ -129,7 +123,7 @@ func cliente() {
 
 				ip := partes[0]
 
-				if !validarIP(ip) {
+				if !shared.ValidarIP(ip) {
 					fmt.Println("Erro: Endereço IP inválido. Tente novamente.")
 					continue 
 				}

@@ -10,15 +10,15 @@ import (
 func main() {
     var opcao int
     fmt.Println("Rodar como:")
-    fmt.Println("1 - Cliente")
-    fmt.Println("2 - Servidor")
+    fmt.Println("1 - Servidor pai")
+    fmt.Println("2 - Servidor filho")
     fmt.Scan(&opcao)
 
     switch opcao {
     case 1:
-        cliente.Run()
+        //cliente.Run()
     case 2:
-        servidor.Run()
+        //servidor.Run()
     default:
         fmt.Println("Opção inválida.")
         os.Exit(1)
