@@ -23,25 +23,6 @@ var (
 // Endereço deste cliente para o servidor poder retornar chamadas (WAIT_FOR_RESPONSE).
 const clienteAddr = "127.0.0.1:9901"
 
-// iniciarListener abre uma porta TCP para receber respostas assíncronas dos servidores.
-func iniciarListener() {
-	listener, err := net.Listen("tcp", clienteAddr)
-	if err != nil {
-		log.Fatalf("Erro ao iniciar listener do cliente em %s: %v", clienteAddr, err)
-	}
-	defer listener.Close()
-	fmt.Printf("Cliente ouvindo por respostas assíncronas em %s\n", clienteAddr)
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Printf("Erro ao aceitar conexão de servidor: %v", err)
-			continue
-		}
-		// Usa uma nova goroutine para cada resposta, para não bloquear o listener.
-		go handleAsyncResponse(conn)
-	}
-}
 
 func handleAsyncResponse(conn net.Conn) {
 	defer conn.Close()
@@ -87,6 +68,8 @@ func RandomConect(servidoresIP []string) (net.Conn, error) {
 }
 
 func cliente() {
+	go shared.StartListener(clienteAddr, handleAsyncResponse)
+
 	var servidoresIP []string
 	var iniciado bool
 	
@@ -235,16 +218,14 @@ func cliente() {
 				timestamps[msgResposta.Chave] = msgResposta.Timestamp
 				tsMutex.Unlock()
 				fmt.Printf("GET key: [%s] value: [%s] obtido do servidor [%s], meu timestamp [%d] e do servidor [%d]\n",
-					msgResposta.Chave, msgResposta.Valor, conn.RemoteAddr().String(), ultimoTimestamp, msgResposta.Timestamp)
+				msgResposta.Chave, msgResposta.Valor, conn.RemoteAddr().String(), ultimoTimestamp, msgResposta.Timestamp)
 
 			case "WAIT_FOR_RESPONSE":
 				fmt.Printf("WAIT_FOR_RESPONSE para a chave [%s]. Aguardando atualização assíncrona do servidor [%s].\n", msgResposta.Chave, conn.RemoteAddr().String())
-				iniciarListener()
 
 			default:
 				fmt.Println("Resposta inesperada do servidor:", respostaServidor)
 			}
-
 
 		case "4", "SAIR":
 			fmt.Println("\nSaindo do cliente.")
