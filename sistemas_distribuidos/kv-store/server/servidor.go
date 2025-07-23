@@ -5,12 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"os"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/julianvitor/ufabc/sistemas_distribuidos/internal/shared"
 )
@@ -22,8 +19,8 @@ type registro struct{
 var (
 	Dados = make(map[string]registro)
 	DadosMutex = &sync.Mutex{}
-	SelfServerAddr := ""  
-	FatherServerAddr := ""
+	SelfServerAddr string
+	FatherServerAddr string
 )
 
 func Menu(){
@@ -35,7 +32,7 @@ func Menu(){
 		SelfServerAddr, _ := reader.ReadString('\n')
 
 		fmt.Println("Insira o endereço do servidor lider.")
-		FatherServerAddr, _ := reader.Readstring('\n')
+		FatherServerAddr, _ := reader.ReadString('\n')
 		
 		if (FatherServerAddr == SelfServerAddr){
 			FatherServer()
