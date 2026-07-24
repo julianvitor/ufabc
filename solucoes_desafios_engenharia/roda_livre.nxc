@@ -1,0 +1,51 @@
+#define LIGHT_PORT IN_3
+#define MOTOR_PORT OUT_A
+
+// Configurações fáceis de ajustar
+#define LUZ_ALVO 90  // Valor de luz que o robô considera "ideal" ou "claro"
+#define KP 1.2       // Multiplicador de velocidade (Ganho Proporcional). Aumente se o robô estiver muito lento.
+
+task main() {
+    // Liga o sensor de luz
+    SetSensorLight(LIGHT_PORT);
+
+    while (true) {
+        // 1. Lê o valor atual do sensor (vai de 0 a 100)
+        int luz_atual = Sensor(LIGHT_PORT);
+
+        // 2. Calcula o Erro (quanto falta para chegar na luz ideal)
+        // Se a luz alvo é 90 e a luz atual é 40, o erro é 50.
+        int erro = LUZ_ALVO - luz_atual;
+
+        // 3. Calcula a velocidade baseada no erro (Controle Proporcional)
+        int velocidade = erro * KP;
+
+        // Garante que a velocidade não ultrapasse o limite do motor (100%)
+        if (velocidade > 100) {
+            velocidade = 100;
+        }
+
+        // 4. Aciona o motor ou para se estiver na luz ideal
+        // Usamos uma pequena margem (erro menor que 5) para o motor não ficar tremendo
+        if (erro > 5) {
+            OnFwd(MOTOR_PORT, velocidade);
+        } else {
+            Off(MOTOR_PORT); // Chegou na luz ideal, desliga o motor
+        }
+
+        // 5. Mostra as informações na tela do NXT
+        ClearScreen(); // Limpa a tela antes de escrever os novos valores
+
+        TextOut(0, LCD_LINE1, "Luz Atual:");
+        NumOut(70, LCD_LINE1, luz_atual); // O número 70 é a posição na tela
+
+        TextOut(0, LCD_LINE3, "Falta (Erro):");
+        NumOut(70, LCD_LINE3, erro);
+
+        TextOut(0, LCD_LINE5, "Velocidade:");
+        NumOut(70, LCD_LINE5, velocidade);
+
+        // Pausa de 100 milissegundos para a tela não piscar rápido demais
+        Wait(100);
+    }
+}

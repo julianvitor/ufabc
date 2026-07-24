@@ -1,0 +1,13 @@
+task main() {
+    // Imprime o texto na coluna 0, linha 3
+    TextOut(0, LCD_LINE3, "Hello World!");
+
+    // Liga o motor da porta A com 50% de velocidade
+    OnFwd(OUT_A, 50);
+
+    // Mantém o programa rodando por 5 segundos
+    Wait(5000);
+
+    // Desliga o motor
+    Off(OUT_A);
+}
