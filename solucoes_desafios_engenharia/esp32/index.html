@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Meteorológico Orbital - ESP32</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fontes Futuristas -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['JetBrains Mono', 'monospace'],
+                        orbitron: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        space: '#050510',
+                        panel: '#0b0c16',
+                        neon: '#00f0ff',
+                        warning: '#ff0055'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050510;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(0, 240, 255, 0) 0%, rgba(0, 240, 255, 0.1) 50%, rgba(0, 240, 255, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% {
+                bottom: 100%;
+            }
+
+            100% {
+                bottom: -100px;
+            }
+        }
+
+        .glitch-hover:hover {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6), inset 0 0 10px rgba(0, 240, 255, 0.3);
+            text-shadow: 0 0 5px rgba(0, 240, 255, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0b0c16;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00f0ff;
+        }
+    </style>
+</head>
+
+<body class="text-gray-300 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div class="scanline"></div>
+
+    <div
+        class="w-full max-w-2xl bg-panel/90 backdrop-blur-sm border border-neon/30 p-8 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.1)] relative z-10">
+
+        <!-- Header -->
+        <div class="border-b border-neon/20 pb-4 mb-8 text-center relative">
+            <div class="absolute top-0 left-0 w-2 h-2 bg-neon animate-pulse"></div>
+            <div class="absolute top-0 right-0 w-2 h-2 bg-neon animate-pulse"></div>
+            <h1
+                class="font-orbitron text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon to-blue-500 tracking-widest uppercase">
+                Estação de Proc. Espacial
+            </h1>
+            <p class="text-neon/70 text-xs mt-2 uppercase tracking-widest">ESP32 Backend Uplink • Setor Meteorológico
+            </p>
+        </div>
+
+        <!-- Seção Manual -->
+        <div
+            class="mb-10 bg-black/40 p-6 border border-gray-800 rounded-md relative overflow-hidden group hover:border-neon/40 transition-colors">
+            <div
+                class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-neon/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+            </div>
+            <h2 class="font-orbitron text-neon text-lg mb-4 flex items-center gap-2">
+                <span class="inline-block w-2 h-2 bg-neon rounded-full"></span> Telemetria Individual
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="text-xs uppercase text-gray-500 font-bold mb-1 block">Temp (°C)</label>
+                    <input type="number" id="temp" step="0.1"
+                        class="w-full bg-space border border-gray-700 text-neon p-2 rounded focus:border-neon focus:outline-none focus:ring-1 focus:ring-neon transition-all placeholder-gray-700"
+                        placeholder="0.0">
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-gray-500 font-bold mb-1 block">Umidade (%)</label>
+                    <input type="number" id="umidade" step="0.1"
+                        class="w-full bg-space border border-gray-700 text-neon p-2 rounded focus:border-neon focus:outline-none focus:ring-1 focus:ring-neon transition-all placeholder-gray-700"
+                        placeholder="0.0">
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-gray-500 font-bold mb-1 block">Vento (km/h)</label>
+                    <input type="number" id="vento" step="0.1"
+                        class="w-full bg-space border border-gray-700 text-neon p-2 rounded focus:border-neon focus:outline-none focus:ring-1 focus:ring-neon transition-all placeholder-gray-700"
+                        placeholder="0.0">
+                </div>
+            </div>
+
+            <button onclick="calcularManual()"
+                class="w-full bg-neon/10 border border-neon text-neon font-orbitron uppercase tracking-widest py-3 rounded glitch-hover transition-all duration-300">
+                Processar no Core ESP32
+            </button>
+
+            <div id="resultado"
+                class="mt-4 p-4 bg-space/80 border-l-2 border-neon text-sm hidden font-mono text-neon/90 shadow-[inset_0_0_10px_rgba(0,0,0,1)]">
+            </div>
+        </div>
+
+        <!-- Seção Lote (CSV) -->
+        <div
+            class="bg-black/40 p-6 border border-gray-800 rounded-md relative overflow-hidden group hover:border-neon/40 transition-colors">
+            <div
+                class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+            </div>
+            <h2 class="font-orbitron text-blue-400 text-lg mb-2 flex items-center gap-2">
+                <span class="inline-block w-2 h-2 bg-blue-500 rounded-full"></span> Processamento de Lote (CSV)
+            </h2>
+            <p class="text-xs text-gray-500 mb-4 uppercase">Max Payload: 1MB</p>
+
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <input type="file" id="csvFile" accept=".csv"
+                    class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-neon hover:file:bg-gray-700 cursor-pointer border border-gray-700 p-1 rounded bg-space">
+
+                <button onclick="processarCSV()"
+                    class="w-full md:w-auto px-6 bg-blue-900/40 border border-blue-500 text-blue-400 font-orbitron uppercase tracking-widest py-2 rounded hover:bg-blue-500/20 hover:text-blue-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all whitespace-nowrap">
+                    Uplink
+                </button>
+            </div>
+
+            <!-- Progresso -->
+            <div class="w-full bg-space border border-gray-700 rounded-sm mt-5 h-4 hidden relative overflow-hidden"
+                id="progressContainer">
+                <div class="h-full bg-gradient-to-r from-blue-600 to-neon w-0 transition-all duration-200 relative"
+                    id="progressBar">
+                    <div
+                        class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMikiLz4KPC9zdmc+')] opacity-50">
+                    </div>
+                </div>
+            </div>
+            <p id="statusTxt" class="text-[10px] uppercase font-bold text-gray-400 mt-2 text-right tracking-wider"></p>
+
+            <button id="downloadBtn"
+                class="w-full mt-4 bg-green-900/30 border border-green-500 text-green-400 font-orbitron uppercase tracking-widest py-3 rounded hover:bg-green-500/20 hover:shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all hidden">
+                ⬇ Download Dados Processados
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // JS Mantido idêntico - Apenas ajustes visuais nas mensagens de retorno
+        async function calcularManual() {
+            const T = document.getElementById('temp').value;
+            const UR = document.getElementById('umidade').value;
+            const v = document.getElementById('vento').value;
+            const resDiv = document.getElementById('resultado');
+
+            try {
+                resDiv.style.display = 'block';
+                resDiv.innerHTML = "<span class='animate-pulse'>ESTABELECENDO CONEXÃO ESP32...</span>";
+
+                const response = await fetch(`/calcular_manual?t=${T}&ur=${UR}&v=${v}`);
+                if (response.ok) {
+                    const text = await response.text();
+                    resDiv.innerHTML = text;
+                } else {
+                    resDiv.innerHTML = "<span class='text-warning'>ERRO: FALHA NO CÁLCULO ORBITAL.</span>";
+                }
+            } catch (error) {
+                resDiv.innerHTML = "<span class='text-warning'>ERRO: ESP32 OFFLINE OU SINAL PERDIDO.</span>";
+            }
+        }
+
+        function processarCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) { alert("SISTEMA: SELECIONE UM ARQUIVO CSV PARA UPLINK."); return; }
+
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'none';
+            const barra = document.getElementById('progressBar');
+            const status = document.getElementById('statusTxt');
+
+            barra.className = 'h-full bg-gradient-to-r from-blue-600 to-neon w-0 transition-all duration-200 relative';
+            barra.style.width = '0%';
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/processar_csv", true);
+            xhr.responseType = "blob";
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    barra.style.width = percent + '%';
+                    status.innerText = percent < 100 ? `UPLINK: ${percent}%` : "PROCESSANDO NO ESP32... AGUARDE";
+                }
+            };
+
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    status.innerText = "PROCESSAMENTO CONCLUÍDO";
+                    status.classList.add('text-green-400');
+                    const blob = this.response;
+                    const url = URL.createObjectURL(blob);
+
+                    const btn = document.getElementById('downloadBtn');
+                    btn.onclick = () => {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'payload_processado.csv';
+                        a.click();
+                    };
+                    btn.style.display = 'block';
+                } else {
+                    status.innerText = "FALHA NO ESP32: HTTP " + this.status;
+                    status.classList.add('text-warning');
+                    barra.className = 'h-full bg-warning w-full';
+                }
+            };
+
+            xhr.onerror = function () {
+                status.innerText = "ERRO DE CONEXÃO. UPLINK PERDIDO.";
+                status.classList.add('text-warning');
+                barra.className = 'h-full bg-warning w-full';
+            };
+
+            xhr.send(formData);
+        }
+    </script>
+
+</body>
+
+</html>
