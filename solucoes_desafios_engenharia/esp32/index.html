@@ -95,9 +95,9 @@
             <div class="absolute top-0 right-0 w-2 h-2 bg-neon animate-pulse"></div>
             <h1
                 class="font-orbitron text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon to-blue-500 tracking-widest uppercase">
-                Estação de Proc. Espacial
+                Edge computing module
             </h1>
-            <p class="text-neon/70 text-xs mt-2 uppercase tracking-widest">ESP32 Backend Uplink • Setor Meteorológico
+            <p class="text-neon/70 text-xs mt-2 uppercase tracking-widest">Uplink de processamento orbital • Setor Meteorológico
             </p>
         </div>
 
@@ -182,88 +182,89 @@
         </div>
     </div>
 
-    <script>
-        // JS Mantido idêntico - Apenas ajustes visuais nas mensagens de retorno
-        async function calcularManual() {
-            const T = document.getElementById('temp').value;
-            const UR = document.getElementById('umidade').value;
-            const v = document.getElementById('vento').value;
-            const resDiv = document.getElementById('resultado');
-
-            try {
-                resDiv.style.display = 'block';
-                resDiv.innerHTML = "<span class='animate-pulse'>ESTABELECENDO CONEXÃO ESP32...</span>";
-
-                const response = await fetch(`/calcular_manual?t=${T}&ur=${UR}&v=${v}`);
-                if (response.ok) {
-                    const text = await response.text();
-                    resDiv.innerHTML = text;
-                } else {
-                    resDiv.innerHTML = "<span class='text-warning'>ERRO: FALHA NO CÁLCULO ORBITAL.</span>";
-                }
-            } catch (error) {
-                resDiv.innerHTML = "<span class='text-warning'>ERRO: ESP32 OFFLINE OU SINAL PERDIDO.</span>";
-            }
-        }
-
-        function processarCSV() {
-            const file = document.getElementById('csvFile').files[0];
-            if (!file) { alert("SISTEMA: SELECIONE UM ARQUIVO CSV PARA UPLINK."); return; }
-
-            document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('downloadBtn').style.display = 'none';
-            const barra = document.getElementById('progressBar');
-            const status = document.getElementById('statusTxt');
-
-            barra.className = 'h-full bg-gradient-to-r from-blue-600 to-neon w-0 transition-all duration-200 relative';
-            barra.style.width = '0%';
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/processar_csv", true);
-            xhr.responseType = "blob";
-
-            xhr.upload.onprogress = function (e) {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    barra.style.width = percent + '%';
-                    status.innerText = percent < 100 ? `UPLINK: ${percent}%` : "PROCESSANDO NO ESP32... AGUARDE";
-                }
-            };
-
-            xhr.onload = function () {
-                if (this.status === 200) {
+<script>
+    // Conexão WebSocket
+    let ws;
+    function initWebSocket() {
+        const gateway = `ws://${window.location.hostname}:81/`;
+        ws = new WebSocket(gateway);
+        
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.progress) {
+                const barra = document.getElementById('progressBar');
+                const status = document.getElementById('statusTxt');
+                
+                barra.style.width = data.progress + '%';
+                status.innerText = `PROCESSANDO NO CORE: ${data.progress}%`;
+                
+                if (data.done) {
                     status.innerText = "PROCESSAMENTO CONCLUÍDO";
                     status.classList.add('text-green-400');
-                    const blob = this.response;
-                    const url = URL.createObjectURL(blob);
-
-                    const btn = document.getElementById('downloadBtn');
-                    btn.onclick = () => {
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'payload_processado.csv';
-                        a.click();
-                    };
-                    btn.style.display = 'block';
-                } else {
-                    status.innerText = "FALHA NO ESP32: HTTP " + this.status;
-                    status.classList.add('text-warning');
-                    barra.className = 'h-full bg-warning w-full';
                 }
-            };
+            }
+        };
+    }
+    
+    // Inicia o WS ao carregar a página
+    window.addEventListener('load', initWebSocket);
 
-            xhr.onerror = function () {
-                status.innerText = "ERRO DE CONEXÃO. UPLINK PERDIDO.";
+    function processarCSV() {
+        const file = document.getElementById('csvFile').files[0];
+        if (!file) { alert("SISTEMA: SELECIONE UM ARQUIVO CSV PARA UPLINK."); return; }
+
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'none';
+        const barra = document.getElementById('progressBar');
+        const status = document.getElementById('statusTxt');
+        
+        barra.className = 'h-full bg-gradient-to-r from-blue-600 to-neon w-0 transition-all duration-200 relative';
+        barra.style.width = '0%';
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/processar_csv", true);
+        xhr.responseType = "blob"; 
+
+        // Barra de progresso para a fase de UPLOAD
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                if (percent < 100) {
+                    barra.style.width = percent + '%';
+                    status.innerText = `UPLINK: ${percent}%`;
+                } else {
+                    barra.style.width = '0%';
+                    status.innerText = "INICIANDO PROCESSAMENTO ESPACIAL...";
+                }
+            }
+        };
+
+        xhr.onload = function() {
+            if (this.status === 200) {
+                const blob = this.response;
+                const url = URL.createObjectURL(blob);
+                
+                const btn = document.getElementById('downloadBtn');
+                btn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'payload_processado.csv';
+                    a.click();
+                };
+                btn.style.display = 'block';
+            } else {
+                status.innerText = "FALHA NO ESP32: HTTP " + this.status;
                 status.classList.add('text-warning');
-                barra.className = 'h-full bg-warning w-full';
-            };
+                barra.className = 'h-full bg-warning w-full'; 
+            }
+        };
 
-            xhr.send(formData);
-        }
-    </script>
+        xhr.send(formData);
+    }
+</script>
 
 </body>
 
