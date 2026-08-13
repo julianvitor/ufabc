@@ -6,12 +6,12 @@
 #define MOTOR_B OUT_B
 
 // Configurações
-#define LUZ_ALVO 90          // Valor de luz que o robô considera "ideal"
+#define LUZ_ALVO 50          // Valor de luz que o robô considera "ideal"
 #define HISTERESE_ALVO 5     // Histerese para o alvo (só volta a procurar se a luz cair abaixo de LUZ_ALVO - HISTERESE_ALVO)
 #define HISTERESE_QUEDA 3    // Queda de luz necessária para considerar que passou do alvo (evita falsas detecções por ruído)
 #define TEMPO_ON 2000          // Tempo de acionamento dos motores (ms)
-#define TEMPO_OFF 150        // Tempo com motores desligados para evitar inércia (ms)
-#define VELOCIDADE 50        // Velocidade base dos motores
+#define TEMPO_OFF 1000        // Tempo com motores desligados para evitar inércia (ms)
+#define VELOCIDADE 100        // Velocidade base dos motores
 
 task main() {
     // Inicializa o sensor de luz na porta 3
@@ -60,11 +60,12 @@ task main() {
         // Motores em lados opostos giram em sentidos opostos para rotacionar no próprio eixo
         if (sentido == 1) {
             OnFwd(MOTOR_A, VELOCIDADE);
-            OnRev(MOTOR_B, VELOCIDADE);
+            OnFwd(MOTOR_B, VELOCIDADE);
         } else {
             OnRev(MOTOR_A, VELOCIDADE);
-            OnFwd(MOTOR_B, VELOCIDADE);
+            OnRev(MOTOR_B, VELOCIDADE);
         }
+
         
         // Tempo de pulso ligado
         Wait(TEMPO_ON);
