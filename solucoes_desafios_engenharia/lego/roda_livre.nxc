@@ -11,7 +11,7 @@
 #define HISTERESE_QUEDA 3    // Queda de luz necessária para considerar que passou do alvo (evita falsas detecções por ruído)
 #define TEMPO_ON 800          // Tempo de acionamento dos motores (ms)
 #define TEMPO_OFF 200        // Tempo com motores desligados para evitar inércia (ms)
-#define TEMPO_FREIO 300      // Tempo do pulso reverso (freio/recuo)
+#define MAX_TENTATIVAS 3     // Número de tentativas antes de inverter o lado
 #define VELOCIDADE 100        // Velocidade base dos motores
 
 task main() {
@@ -29,7 +29,8 @@ task main() {
     
     int luz_atual = Sensor(LIGHT_PORT);
     int luz_anterior = luz_atual;
-    // O sentido principal de busca será sempre para frente (1)
+    int sentido = 1; // 1 para um lado, -1 para o outro
+    int tentativas = 0;
 
     while (true) {
         // 1. Lê o valor atual do sensor
@@ -59,28 +60,34 @@ task main() {
             continue;
         }
 
-        // 3. Avalia se passou da fonte de luz (a luz começou a diminuir)
+        // 3. Avalia se passou da fonte de luz ou se estagnou
         if (luz_atual < luz_anterior - HISTERESE_QUEDA) {
-            // Passou do pico. Como girar no sentido -1 é difícil, usamos ele apenas como "freio"
-            // (um recuo curto e rápido) e depois voltamos a priorizar a busca no sentido 1.
-            OnRev(MOTOR_A, VELOCIDADE);
-            OnRev(MOTOR_B, VELOCIDADE);
-            Wait(TEMPO_FREIO);
-            Off(MOTOR_A);
-            Off(MOTOR_B);
-            Wait(TEMPO_OFF);
-            
-            // Atualiza a luz após o freio para não acionar o recuo várias vezes seguidas
-            luz_anterior = Sensor(LIGHT_PORT); 
-            continue; // Recomeça o loop para nova medição e continua a busca no sentido 1
+            // Passou do pico (a luz caiu além da histerese)
+            sentido = -sentido; // Inverte o sentido de busca
+            luz_anterior = luz_atual; 
+            tentativas = 0; // Zera as tentativas pois tomou uma ação
         } else if (luz_atual > luz_anterior) {
-            // Se a luz está aumentando, estamos no caminho certo, atualizamos o pico local
+            // A luz aumentou, estamos no caminho certo!
             luz_anterior = luz_atual;
+            tentativas = 0; // Zera as tentativas
+        } else {
+            // A luz não aumentou nem caiu drasticamente (ficou estagnada)
+            tentativas++;
+            if (tentativas >= MAX_TENTATIVAS) {
+                sentido = -sentido; // Se não houver progresso, inverte o lado
+                tentativas = 0;
+                luz_anterior = luz_atual;
+            }
         }
 
-        // 4. Aciona os motores: prioridade total para o sentido 1 (OnFwd)
-        OnFwd(MOTOR_A, VELOCIDADE);
-        OnFwd(MOTOR_B, VELOCIDADE);
+        // 4. Aciona os motores para girar nos dois lados conforme o sentido atual
+        if (sentido == 1) {
+            OnFwd(MOTOR_A, VELOCIDADE);
+            OnFwd(MOTOR_B, VELOCIDADE);
+        } else {
+            OnRev(MOTOR_A, VELOCIDADE);
+            OnRev(MOTOR_B, VELOCIDADE);
+        }
 
         
         // Tempo de pulso ligado
@@ -100,5 +107,8 @@ task main() {
 
         TextOut(0, LCD_LINE5, "Luz Ant.:");
         NumOut(70, LCD_LINE5, luz_anterior); 
+
+        TextOut(0, LCD_LINE7, "Sentido:");
+        NumOut(70, LCD_LINE7, sentido);
     }
 }
