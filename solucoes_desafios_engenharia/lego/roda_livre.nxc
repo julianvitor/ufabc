@@ -69,7 +69,7 @@ task main() {
         }
 
         // 4. Aciona os motores em intervalos curtos (lidando com a inércia)
-        // Motores em lados opostos giram em sentidos opostos para rotacionar no próprio eixo
+        // motores giram no mesmo sentido
         if (sentido == 1) {
             OnFwd(MOTOR_A, VELOCIDADE);
             OnFwd(MOTOR_B, VELOCIDADE);
