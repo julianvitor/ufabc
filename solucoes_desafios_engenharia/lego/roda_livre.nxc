@@ -1,51 +1,90 @@
-#define LIGHT_PORT IN_3
-#define MOTOR_PORT OUT_A
+// Runs on NXT LEGO
+// Sistema roda livre para orientação do mockup de satelite 
 
-// Configurações fáceis de ajustar
-#define LUZ_ALVO 90  // Valor de luz que o robô considera "ideal" ou "claro"
-#define KP 1.2       // Multiplicador de velocidade (Ganho Proporcional). Aumente se o robô estiver muito lento.
+#define LIGHT_PORT IN_3
+#define MOTOR_A OUT_A
+#define MOTOR_B OUT_B
+
+// Configurações
+#define LUZ_ALVO 90          // Valor de luz que o robô considera "ideal"
+#define HISTERESE_ALVO 5     // Histerese para o alvo (só volta a procurar se a luz cair abaixo de LUZ_ALVO - HISTERESE_ALVO)
+#define HISTERESE_QUEDA 3    // Queda de luz necessária para considerar que passou do alvo (evita falsas detecções por ruído)
+#define TEMPO_ON 60          // Tempo de acionamento dos motores (ms)
+#define TEMPO_OFF 150        // Tempo com motores desligados para evitar inércia (ms)
+#define VELOCIDADE 50        // Velocidade base dos motores
 
 task main() {
-    // Liga o sensor de luz
+    // Inicializa o sensor de luz na porta 3
     SetSensorLight(LIGHT_PORT);
+    
+    int luz_atual = Sensor(LIGHT_PORT);
+    int luz_anterior = luz_atual;
+    int sentido = 1; // 1 para girar em um sentido, -1 para o sentido oposto
 
     while (true) {
-        // 1. Lê o valor atual do sensor (vai de 0 a 100)
-        int luz_atual = Sensor(LIGHT_PORT);
+        // 1. Lê o valor atual do sensor
+        luz_atual = Sensor(LIGHT_PORT);
 
-        // 2. Calcula o Erro (quanto falta para chegar na luz ideal)
-        // Se a luz alvo é 90 e a luz atual é 40, o erro é 50.
-        int erro = LUZ_ALVO - luz_atual;
+        // 2. Verifica se a luz alvo foi alcançada
+        // Usamos histerese para que o motor não fique ligando e desligando no limiar
+        if (luz_atual >= LUZ_ALVO) {
+            Off(MOTOR_A);
+            Off(MOTOR_B);
+            
+            ClearScreen();
+            TextOut(0, LCD_LINE1, "ALVO ALCANCADO!");
+            TextOut(0, LCD_LINE3, "Luz Atual:");
+            NumOut(70, LCD_LINE3, luz_atual); 
 
-        // 3. Calcula a velocidade baseada no erro (Controle Proporcional)
-        int velocidade = erro * KP;
-
-        // Garante que a velocidade não ultrapasse o limite do motor (100%)
-        if (velocidade > 100) {
-            velocidade = 100;
+            // Fica em repouso até a luz cair fora da zona de histerese
+            while (Sensor(LIGHT_PORT) > LUZ_ALVO - HISTERESE_ALVO) {
+                Wait(100);
+            }
+            
+            // Quando a luz sair da zona de histerese, atualiza a referência e recomeça
+            luz_anterior = Sensor(LIGHT_PORT);
+            continue;
         }
 
-        // 4. Aciona o motor ou para se estiver na luz ideal
-        // Usamos uma pequena margem (erro menor que 5) para o motor não ficar tremendo
-        if (erro > 5) {
-            OnFwd(MOTOR_PORT, velocidade);
+        // 3. Avalia se passou da fonte de luz (a luz começou a diminuir)
+        if (luz_atual < luz_anterior - HISTERESE_QUEDA) {
+            sentido = -sentido; // Retrocede invertendo o sentido de giro
+            // Atualiza a luz anterior para a atual, evitando várias inversões seguidas devido à inércia
+            luz_anterior = luz_atual; 
+        } else if (luz_atual > luz_anterior) {
+            // Se a luz está aumentando, estamos no caminho certo, atualizamos o pico local
+            luz_anterior = luz_atual;
+        }
+
+        // 4. Aciona os motores em intervalos curtos (lidando com a inércia)
+        // Motores em lados opostos giram em sentidos opostos para rotacionar no próprio eixo
+        if (sentido == 1) {
+            OnFwd(MOTOR_A, VELOCIDADE);
+            OnRev(MOTOR_B, VELOCIDADE);
         } else {
-            Off(MOTOR_PORT); // Chegou na luz ideal, desliga o motor
+            OnRev(MOTOR_A, VELOCIDADE);
+            OnFwd(MOTOR_B, VELOCIDADE);
         }
+        
+        // Tempo de pulso ligado
+        Wait(TEMPO_ON);
+        
+        // Desliga e aguarda inércia dissipar antes da próxima leitura
+        Off(MOTOR_A);
+        Off(MOTOR_B);
+        Wait(TEMPO_OFF);
+        
+        // 5. Atualiza a tela com as informações
+        ClearScreen(); 
+        TextOut(0, LCD_LINE1, "Buscando Luz...");
+        
+        TextOut(0, LCD_LINE3, "Luz Atual:");
+        NumOut(70, LCD_LINE3, luz_atual); 
 
-        // 5. Mostra as informações na tela do NXT
-        ClearScreen(); // Limpa a tela antes de escrever os novos valores
+        TextOut(0, LCD_LINE5, "Luz Ant.:");
+        NumOut(70, LCD_LINE5, luz_anterior); 
 
-        TextOut(0, LCD_LINE1, "Luz Atual:");
-        NumOut(70, LCD_LINE1, luz_atual); // O número 70 é a posição na tela
-
-        TextOut(0, LCD_LINE3, "Falta (Erro):");
-        NumOut(70, LCD_LINE3, erro);
-
-        TextOut(0, LCD_LINE5, "Velocidade:");
-        NumOut(70, LCD_LINE5, velocidade);
-
-        // Pausa de 100 milissegundos para a tela não piscar rápido demais
-        Wait(100);
+        TextOut(0, LCD_LINE7, "Sentido:");
+        NumOut(70, LCD_LINE7, sentido);
     }
 }
