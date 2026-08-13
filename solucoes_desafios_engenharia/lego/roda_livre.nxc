@@ -6,14 +6,20 @@
 #define MOTOR_B OUT_B
 
 // Configurações
-#define LUZ_ALVO 50          // Valor de luz que o robô considera "ideal"
+#define LUZ_ALVO 30          // Valor de luz que o robô considera "ideal"
 #define HISTERESE_ALVO 5     // Histerese para o alvo (só volta a procurar se a luz cair abaixo de LUZ_ALVO - HISTERESE_ALVO)
 #define HISTERESE_QUEDA 3    // Queda de luz necessária para considerar que passou do alvo (evita falsas detecções por ruído)
-#define TEMPO_ON 2000          // Tempo de acionamento dos motores (ms)
-#define TEMPO_OFF 1000        // Tempo com motores desligados para evitar inércia (ms)
+#define TEMPO_ON 800          // Tempo de acionamento dos motores (ms)
+#define TEMPO_OFF 200        // Tempo com motores desligados para evitar inércia (ms)
 #define VELOCIDADE 100        // Velocidade base dos motores
 
 task main() {
+    // Toca musiquinha de boot (Arpejo)
+    PlayTone(523, 150); Wait(200);
+    PlayTone(659, 150); Wait(200);
+    PlayTone(784, 150); Wait(200);
+    PlayTone(1046, 300); Wait(300);
+
     // Inicializa o sensor de luz na porta 3
     SetSensorLight(LIGHT_PORT);
     
