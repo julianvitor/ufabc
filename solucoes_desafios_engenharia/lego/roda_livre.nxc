@@ -14,11 +14,20 @@
 #define VELOCIDADE 100        // Velocidade base dos motores
 
 task main() {
-    // Toca musiquinha de boot (Arpejo)
-    PlayTone(523, 150); Wait(200);
-    PlayTone(659, 150); Wait(200);
-    PlayTone(784, 150); Wait(200);
-    PlayTone(1046, 300); Wait(300);
+    // Toca musiquinha de boot (Tema do Mario)
+    PlayTone(659, 150); Wait(150);
+    Wait(150);
+    PlayTone(659, 150); Wait(150);
+    Wait(150);
+    PlayTone(659, 150); Wait(150);
+    Wait(150);
+    PlayTone(523, 150); Wait(150);
+    PlayTone(659, 150); Wait(150);
+    Wait(150);
+    PlayTone(784, 150); Wait(150);
+    Wait(300);
+    PlayTone(392, 150); Wait(150);
+    Wait(300);
 
     // Inicializa o sensor de luz na porta 3
     SetSensorLight(LIGHT_PORT);
