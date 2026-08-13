@@ -36,6 +36,9 @@ task main() {
             TextOut(0, LCD_LINE3, "Luz Atual:");
             NumOut(70, LCD_LINE3, luz_atual); 
 
+            // Aviso sonoro: bipe de 1000Hz por 500ms
+            PlayTone(1000, 500); 
+
             // Fica em repouso até a luz cair fora da zona de histerese
             while (Sensor(LIGHT_PORT) > LUZ_ALVO - HISTERESE_ALVO) {
                 Wait(100);
