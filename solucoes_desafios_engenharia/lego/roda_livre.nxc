@@ -9,12 +9,22 @@
 #define LUZ_ALVO 30          // Valor de luz que o robô considera "ideal"
 #define HISTERESE_ALVO 5     // Histerese para o alvo (só volta a procurar se a luz cair abaixo de LUZ_ALVO - HISTERESE_ALVO)
 #define HISTERESE_QUEDA 3    // Queda de luz necessária para considerar que passou do alvo (evita falsas detecções por ruído)
-#define TEMPO_ON 800          // Tempo de acionamento dos motores (ms)
+#define TEMPO_ON 1000          // Tempo de acionamento dos motores (ms)
 #define TEMPO_OFF 200        // Tempo com motores desligados para evitar inércia (ms)
-#define MAX_TENTATIVAS 3     // Número de tentativas antes de inverter o lado
+#define MAX_TENTATIVAS 8     // Número de tentativas antes de inverter o lado
 #define VELOCIDADE 100        // Velocidade base dos motores
 
 task main() {
+    // Contagem regressiva de 10 segundos no boot
+    for (int i = 10; i > 0; i--) {
+        ClearScreen();
+        TextOut(0, LCD_LINE1, "Iniciando em:");
+        NumOut(40, LCD_LINE3, i);
+        PlayTone(440, 100); // Bip a cada segundo
+        Wait(1000);         // Aguarda 1 segundo
+    }
+    ClearScreen();
+
     // Toca musiquinha de boot original (sequência de inicialização de sistema)
     PlayTone(261, 100); Wait(120); // Dó
     PlayTone(329, 100); Wait(120); // Mi
@@ -52,7 +62,7 @@ task main() {
 
             // Fica em repouso até a luz cair fora da zona de histerese
             while (Sensor(LIGHT_PORT) > LUZ_ALVO - HISTERESE_ALVO) {
-                Wait(100);
+                Wait(50);
             }
             
             // Quando a luz sair da zona de histerese, atualiza a referência e recomeça
