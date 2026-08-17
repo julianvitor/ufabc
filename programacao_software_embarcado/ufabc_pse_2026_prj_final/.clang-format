@@ -1,0 +1,17 @@
+BasedOnStyle: Google
+
+Standard: Latest
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+ColumnLimit: 100
+
+SortIncludes: true
+
+BreakBeforeBraces: Attach
+
+SpaceBeforeAssignmentOperators: true
+
+AlignOperands: Align

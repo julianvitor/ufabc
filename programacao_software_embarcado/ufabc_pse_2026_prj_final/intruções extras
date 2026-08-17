@@ -1,0 +1,7 @@
+1) Só mandar dados quando requisitado
+2) Sem confirmação de recebimento de dados
+3) Mandar o ADC como 4 bytes já em ASCII, um para cada dígito do display 
+4) Mandar o cronometro como 4 bytes já em ASCII tbm
+5) Comunicação toda em ASCII
+6) PING e SERV como string ASCII tbm
+7) 
